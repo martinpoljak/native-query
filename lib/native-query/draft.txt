@@ -1,0 +1,2 @@
+model.maintainers.fields(...).where(...).order(...).get(10).
+model.maintainers.fields(:id, :name).where(:active => true).order(:name, :asc).get(10)
