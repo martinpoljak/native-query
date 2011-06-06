@@ -236,7 +236,7 @@ module NativeQuery
                 from = @indirect_source.to_s
             end
         
-            joining_table = (from.dup << "_" << to).to_sym
+            joining_table = (from + "_" + to).to_sym
             result[joining_table] = "[" << from << ".id] = [" << from << "_" << to << "." << from << "_id]"
             result[@table] = "[" << from << "_" << to << "." << to << "_id] = [" << to << ".id]"
             

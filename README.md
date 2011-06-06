@@ -87,8 +87,6 @@ To the following structure:
             "ja" => "Japan Wikihow"
         }
 
-
-    
 ### Conditions, ordering and limits
 
 Limits and offsets are simple too:
