@@ -418,5 +418,7 @@ Copyright
 Copyright &copy; 2010-2011 [Martin Kozák][4]. See `LICENSE.txt` for
 further details.
 
-[3]: http://github.com/martinkozak/fluent-query/issues
+[1]: http://dibiphp.com/
+[2]: https://github.com/martinkozak/fluent-query
+[3]: http://github.com/martinkozak/native-query/issues
 [4]: http://www.martinkozak.net/
