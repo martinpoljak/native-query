@@ -1,6 +1,8 @@
 # encoding: utf-8
+
 require 'rubygems'
 require 'bundler'
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -8,15 +10,16 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
-require 'rake'
 
+require 'rake'
 require 'jeweler'
+
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "native-query"
   gem.homepage = "http://github.com/martinkozak/native-query"
   gem.license = "MIT"
-  gem.summary = 'Ellegant very ruby SQL query helper which works by similar way as Arel or another ORM selecting logic.'
+  gem.summary = 'Cool way how to speak with database server. It's ellegant and very ruby SQL query helper which works by similar way as Arel or another ORM selecting logic. It's derived from Dibi database layer in its ideas, so is much more simple and (of sure) much more KISS, readable and straightforward.'
   gem.email = "martinkozak@martinkozak.net"
   gem.authors = ["Martin Kozák"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
@@ -26,12 +29,3 @@ Jeweler::Tasks.new do |gem|
 end
 Jeweler::RubygemsDotOrgTasks.new
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "qrpc #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end

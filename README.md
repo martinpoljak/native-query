@@ -1,7 +1,7 @@
 Native Query
 ============
 
-**Native Query** is cool way how to speak to database server. It's 
+**Native Query** is cool way how to speak with database server. It's 
 ellegant and very ruby SQL query helper which works by similar way as 
 Arel or another ORM selecting logic. It's derived from [Dibi][1] 
 database layer in its ideas, so is much more simple and (of sure) much 
@@ -14,11 +14,11 @@ database &ndash; platform.
 ### Connecting
 
     # Include it!
-    require "fluent-query/drivers/postgresql"
-    require "native-query/model"
+    require "fluent-query/mysql"
+    require "native-query"
     
     # Setup it!
-    driver = FluentQuery::Drivers::PostgreSQLDriver
+    driver = FluentQuery::Drivers::MySQL
     settings = {
         :username => "wikistatistics.net",
         :password => "alfabeta",
@@ -62,7 +62,7 @@ aggregation of returned rows to multidimensional Hashes.
 Simply give it key names from your dataset. Be warn, only one or two 
 levels (e.g. dimesions in resultant Hash) are supported:
 
-    records = model.site :maintainer_id, :language, :name do
+    records = model.sites :maintainer_id, :language, :name do
         # ...
         get.assoc :maintainer_id, :language
     end
@@ -148,7 +148,7 @@ Two kinds of joining are available: *automatic* and *manual*. They have
 the same syntax principially, for manual joining is necessary to provide
 more informations of sure.
 
-#### Manual joining
+#### Manual Joining
 
 For manual joining simply type:
 
@@ -186,9 +186,9 @@ semiautomatic way only:
     
 Which means the same as:
 
-    SELECT ... FROM maintainers 
-        JOIN sites_maintainers ON maintainers.id = sites_maintainers.maintainers_id
-        JOIN sites ON sites_maintainers.sites_id = site.id
+    SELECT ... FROM `maintainers` 
+        JOIN `sites_maintainers` ON `maintainers`.`id` = `sites_maintainers`.`maintainers_id`
+        JOIN `sites` ON `sites_maintainers`.`sites_id` = `site`.`id`
         ...
 
 Only `LEFT JOIN` is supported. For other joining types, use direct 
@@ -228,9 +228,9 @@ But then you can use the following nice syntax for both *direct*:
     
 Which will be transformed approximately (it's driver dependent) into:
   
-    SELECT name, code, sites.code, sites.name
-        FROM maintainers
-        JOIN sites ON maintainers.id = sites.maintainer_id
+    SELECT `name`, `code`, `sites`.`code`, `sites`.`name`
+        FROM `maintainers`
+        JOIN `sites` ON `maintainers`.`id` = `sites`.`maintainer_id`
         ...
         
 Or *indirect*:
@@ -246,70 +246,50 @@ Or *indirect*:
 
 Which will be transformed approximately (it's driver dependent) into:
 
-    SELECT name, code, sites.code AS sites_code, sites.name AS sites_name
-        FROM maintainers
-        JOIN maintainers_sites ON maintainers.id = maintainers_sites.maintainer_id
-        JOIN sites ON maintainers_sites.site_id = site.id
+    SELECT `name`, `code`, `sites`.`code` AS `sites_code`, `sites`.`name` AS `sites_name`
+        FROM `maintainers`
+        JOIN `maintainers_sites` ON `maintainers`.`id` = `maintainers_sites`.`maintainer_id`
+        JOIN `sites` ON `maintainers_sites`.`site_id` = `site`.`id`
         ...
         
 Should be noted, if you need *backward indirect* joining (so in opposite 
 direction than in examples above), simply call `direct backward` or
 `indirect backward`.
+          
+### Inserts, Updates and Deletes
 
-### Examples
+Native Query doesn't support native inserting, updating and deleting, 
+but provides bridge to appropriate Fluent Query methods. Some examples:
 
-Simple example:
+    model.insert(:maintainers, :name => "Wikimedia", :country => "United States")
+    
+    # Will be:
+    #   INSERT INTO `maintainers` (`name`, `country`) VALUES ("Wikimedia", "United States")
+    
+    model.update(:maintainers).set(:country => "Czech Republic").where(:id => 10).limit(1)
+    
+    # Will be:
+    #   UPDATE `maintainers` SET `country` = "Czech Republic" WHERE `id` = 10 LIMIT 1
+    
+    model.delete(:maintainers).where(:id => 10).limit(1)
+    
+    # Will be:
+    #   DELETE FROM `maintainers` WHERE `id` = 10 LIMIT 1
 
-    # Query it!
-    records = model.maintainers :name, :code do
-        where :active => true
-        order :name, :asc
-        limit 1
-        get.all
+#### Transactions
+
+Transactions support is available manual:
+    
+* `model.begin`
+* `model.commit`
+* `model.rollback`
+
+Or by automatic way:
+
+    model.transaction do
+        #...
     end
     
-Will be transformed to:
-  
-    SELECT name, code FROM maintainers 
-        WHERE active IS TRUE
-        ORDER BY name ASC
-        LIMIT 1
-    
-Advanced automatic joining (advanced example):
-    
-    # here selects two fields from 'projects' table and two other fields from joined 'sites' table
-    projects = model.projects :name, :code, :sites_code, :sites_name do
-        sites :code, :name, :language_name do
-            where :active => true
-        end
-        
-        maintainers do                  # joins 'projects' table with table 'maintainers'
-            indirect backward           # ...by indirect way, so M:N
-            where :active => true   
-            where :id => 10
-        end
-
-        where :active => true
-        order :code, [:sites, :code]
-        
-        get.assoc(:code, :sites_code)
-    end
-    
-Will be transformed to:
-
-    SELECT name, code, sites.code AS sites_code, sites.name AS sites_name 
-        FROM projects
-        JOIN sites ON projects.id = sites.project_id
-        JOIN maintainers_projects 
-            ON projects.id = maintainers_projects.project_id
-        JOIN maintainers 
-            ON maintainers.id = maintainers_projects.maintainer_id
-        WHERE sites.active IS TRUE
-            AND maintainers.active IS TRUE
-            AND maintainers.id = 10
-            AND active IS TRUE
-            ORDER BY code, sites.code ASC
- 
 ### Fluent Queries
 
 The *Native Query* library is built on top of the [Fluent Query][2]
@@ -394,11 +374,70 @@ You can take Fluent Query object from the Native Query by:
         where :active => true
         order :name, :asc
         limit 1
-        get.query
+        get.query   # takes the Fluent Query object
     end
     
+    query.execute!
+    
 And if necessary build it by `#build` method to string. Build method is
-also available above Native Query object directly.
+also available above Native Query object directly. To execute query or 
+fetch data is possible through `#do(*args)` or `#execute(*args)`. Result
+will be result object similar to Native Query's one.
+
+### Examples
+
+Simple example:
+
+    # Query it!
+    records = model.maintainers :name, :code do
+        where :active => true
+        order :name, :asc
+        limit 1
+        get.all
+    end
+    
+Will be transformed to:
+  
+    SELECT `name`, `code` FROM `maintainers` 
+        WHERE `active` IS TRUE
+        ORDER BY `name` ASC
+        LIMIT 1
+    
+Advanced automatic joining (advanced example):
+    
+    # here selects two fields from 'projects' table and two other fields from joined 'sites' table
+    projects = model.projects :name, :code, :sites_code, :sites_name do
+        sites :code, :name, :language_name do
+            where :active => true
+        end
+        
+        maintainers do                  # joins 'projects' table with table 'maintainers'
+            indirect backward           # ...by indirect way, so M:N
+            where :active => true   
+            where :id => 10
+        end
+
+        where :active => true
+        order :code, [:sites, :code]
+        
+        get.assoc(:code, :sites_code)
+    end
+    
+Will be transformed to:
+
+    SELECT `name`, `code`, `sites`.`code` AS `sites_code`, `sites`.`name` AS `sites_name` 
+        FROM `projects`
+        JOIN `sites` ON `projects`.`id` = `sites`.`project_id`
+        JOIN `maintainers_projects` 
+            ON `projects`.`id` = `maintainers_projects`.`project_id`
+        JOIN `maintainers` 
+            ON `maintainers`.`id` = `maintainers_projects`.`maintainer_id`
+        WHERE `sites`.`active` IS TRUE
+            AND `maintainers`.`active` IS TRUE
+            AND `maintainers`.`id` = 10
+            AND `active` IS TRUE
+            ORDER BY `code`, `sites`.`code` ASC
+  
     
 Contributing
 ------------
