@@ -68,7 +68,7 @@ module NativeQuery
         #
 
         def assoc(*args, &block)
-            @query.assoc(args) do |row|
+            @query.assoc(*args) do |row|
                 result = Row::new(row)
                 
                 if block
