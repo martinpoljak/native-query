@@ -54,6 +54,12 @@ module NativeQuery
         @limit
         
         ##
+        # Indicates offset to load.
+        #
+        
+        @offset
+        
+        ##
         # Constructor.
         #
         
@@ -127,7 +133,16 @@ module NativeQuery
             @limit = limit
             return self
         end
+         
+        ##
+        # Sets offset to load.
+        #
         
+        def offset(offset)
+            @offset = offset
+            return self
+        end 
+              
         ##
         # Returns result object.
         #
@@ -179,8 +194,13 @@ module NativeQuery
                 # Ordering settings
                 self._process_ordering(query)
                 
+                # Limit and offset
                 if not @limit.nil?
                     query.limit(@limit)
+                end
+                
+                if not @offset.nil?
+                    query.offset(@offset)
                 end
 
             # Returns
