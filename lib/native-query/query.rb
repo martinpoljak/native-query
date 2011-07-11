@@ -109,7 +109,7 @@ module NativeQuery
         #
         
         def where(*args)
-            @where += args
+            @where << args
             return self
         end
         
@@ -189,8 +189,8 @@ module NativeQuery
                 
                 # Where conditions
                 wheres += self._fix_where
-                wheres.each { |i| query.where(i) }
-                
+                wheres.each { |i| query.where(*i) }
+                  
                 # Ordering settings
                 self._process_ordering(query)
                 
@@ -329,8 +329,10 @@ module NativeQuery
         
         protected
         def _fix_where
-            self.class::fix_where(@where) do |i|
-                __fix_field(i)
+            Query::fix_where(@where) do |args|
+                args.each do |i|
+                    __fix_field(i)
+                end
             end
         end
         

@@ -120,7 +120,7 @@ condition using FluentQuery strings:
         # ...    
         where "[id] > 5"
         where "[name] IN %%l", names
-        where "%or", :id => 10, :id => 12
+        where "%%or", :id => 10, :id => 12
         # ...
     end
 
