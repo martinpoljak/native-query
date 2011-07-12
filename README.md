@@ -120,7 +120,7 @@ condition using FluentQuery strings:
         # ...    
         where "[id] > 5"
         where "[name] IN %%l", names
-        where "%%or", :id => 10, :id => 12
+        where "%%or", :id => 10, :name => "Wikia, Inc."
         # ...
     end
 
@@ -134,13 +134,14 @@ Orders work by very predictable way. For example:
     records = model.maintainers :name, :code do
         # ...
         order :name, :desc
-        order [:date, :id], :asc
+        order :date, :asc, :id, :asc
         # ...
     end
     
-Means "order by `name DESC` and then by `date, id ASC`". If you need
-order by joined fields, simply replace symbol by array with table name
-and field name as you can see in advanced example below.
+Means "order by `name DESC` and then by `date, id ASC`". You can combine 
+both of styles mentioned above. If you need order by joined fields, 
+simply replace symbol by array with table name and field name as you can 
+see in advanced example below.
 
 ### Joining
 
@@ -198,7 +199,7 @@ is possible to achieve simply by giving the *Fluent Query* string:
     records = model.maintainers :name, :code, :sites_code, :sites_name do
         # ...
         sites :code, :name, :language_name do
-            indirect "[maintainers.id] = [sites_maintainers.strange_1]", "[sites_maintainers.strange_2] = [site.id]"
+            indirect :sites_maintainers, "[maintainers.id] = [sites_maintainers.strange_1]", "[sites_maintainers.strange_2] = [site.id]"
             # ...
         end
         # ...

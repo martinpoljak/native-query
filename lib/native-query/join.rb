@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "native-query/query"
+require "hash-utils/object"   # >= 0.17.0
 
 module NativeQuery
 
@@ -51,20 +52,16 @@ module NativeQuery
         @type
         
         ##
-        # Indicates source of indirect joining.
-        #
-        # Usable, if joining performed through more than one step
-        # without nesting.
+        # Contains indirect joining manual specification.
         #
         
-        @indirect_source
+        @indirect
         
         ##
-        # Indicates fields for direct joining.
-        # Usable for "backwards" joining B -> A instead of A -> B.
+        # Holds specificarion of direct joining.
         #
         
-        @direct_fields
+        @direct
         
         ##
         # Constructor.
@@ -119,13 +116,9 @@ module NativeQuery
         # Indicates indirect joining. (M:N)
         #
         
-        def indirect(from = nil)
+        def indirect(*args)
             @type = :indirect
-            
-            if not from.nil?
-                @indirect_source = from
-            end
-            
+            @indirect = args
             return self
         end
         
@@ -133,13 +126,9 @@ module NativeQuery
         # Indicates direct joining. (1:M)
         #
         
-        def direct(fields = nil)
+        def direct(*args)
             @type = :direct
-            
-            if not fields.nil?
-                @direct_fields = fields
-            end
-            
+            @direct = args
             return self
         end
         
@@ -219,7 +208,7 @@ module NativeQuery
             NativeQuery::Query::fix_where(@where) do |i|
                 __fix_field(i)
             end
-        end
+          end
         
         ##
         # Builds indirect join.
@@ -229,16 +218,34 @@ module NativeQuery
         def __indirect
             result = { }
             to = @table.to_s
+            from = @original.to_s
+            arg1, arg2, arg3 = @indirect
+
+            # automatic joining
+            if @indirect.empty?
+                through = from + "_" + to
+                joining_table = through.to_sym
+                result[joining_table] = "[" << from << ".id] = [" << through << "." << from << "_id]"
+                result[@table] = "[" << through << "." << to << "_id] = [" << to << ".id]"
+                
+            # standard specification (semiautomatic joining)
+            elsif arg1.symbol? and arg2.hash?
+                through = arg1.to_s
+                joining_table = arg1
+                result[joining_table] = "[" << from << "." << arg2.keys.first.to_s << "] = [" << through << "." << from << "_id]"
+                result[@table] = "[" << through << "." << to << "_id] = [" << to << "." << arg2.values.first.to_s << "]"
+                
+            # fluent query specification (manual joining)
+            elsif arg1.symbol? and arg2.string? and arg3.string?
+                joining_table = arg1
+                result[joining_table] = arg2
+                result[@table] = arg3
             
-            if @indirect_source.nil?
-                from = @original.to_s
+            # error
             else
-                from = @indirect_source.to_s
+                raise Exception::new("Symbol and Hash or Symbol and two Strings expected.")
+                
             end
-        
-            joining_table = (from + "_" + to).to_sym
-            result[joining_table] = "[" << from << ".id] = [" << from << "_" << to << "." << from << "_id]"
-            result[@table] = "[" << from << "_" << to << "." << to << "_id] = [" << to << ".id]"
             
             return result
         end
@@ -249,20 +256,25 @@ module NativeQuery
         
         private
         def __direct
-            original = @original.to_s
-            from = @original.to_sym.to_s
-            to = @table.to_sym.to_s
+            direct = @direct.first
+            from = @original.to_s
+            to = @table.to_s
             result = { }
             
-            if @direct_fields.nil?
-                from << ".id"
-                to << "." << original << "_id"
+            # automatic joining
+            if @direct.empty?
+                result[@table] = "[" << from << ".id] = [" << to << "." << from << "_id]"
+            # manual joining
+            elsif direct.hash?
+                result[@table] = "[" << from << "." << direct.keys.first.to_s << "] = [" << to << "." << direct.values.first.to_s << "]"
+            # special joining
+            elsif direct.string?
+                result[@table] = direct
+            # error
             else
-                from << "." << @direct_fields.keys.first.to_s
-                to << "." << @direct_fields.values.first.to_s
+                raise Exception::new("Hash or String expected.")
             end
             
-            result[@table] = "[" << from << "] = [" << to << "]"
             return result
         end            
     end
