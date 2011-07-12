@@ -105,11 +105,11 @@ module NativeQuery
         end
         
         ##
-        # Sets join conditions.
+        # Selects where conditions to load.
         #
         
         def where(*args)
-            @where += args
+            @where << args
             return self
         end
         
@@ -206,10 +206,12 @@ module NativeQuery
         
         protected
         def _fix_where
-            NativeQuery::Query::fix_conditions(@where) do |i|
-                __fix_field(i)
+            NativeQuery::Query::fix_conditions(@where) do |args|
+                args.each do |i|
+                    __fix_field(i)
+                end
             end
-          end
+        end
         
         ##
         # Builds indirect join.

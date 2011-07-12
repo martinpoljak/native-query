@@ -174,7 +174,7 @@ module NativeQuery
         #
         
         def group(*fields)
-            @group += fields
+            @group = fields
             return self
         end
               
@@ -185,7 +185,7 @@ module NativeQuery
         def get
             
             # Builds query
-            havings = [ ]
+            
                 # Process joins
                 join_fields, wheres, append_joins = self._process_joins
                 
@@ -228,7 +228,7 @@ module NativeQuery
                 wheres.each { |i| query.where(*i) }
                 
                 # Where conditions
-                havings += self._fix_having
+                havings = self._fix_having
                 havings.each { |i| query.having(*i) }
                   
                 # Grouping, ordering and having settings
