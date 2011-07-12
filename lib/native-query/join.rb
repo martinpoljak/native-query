@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "native-query/query"
 require "hash-utils/object"   # >= 0.17.0
+require "hash-utils/array"
 
 module NativeQuery
 
@@ -205,7 +206,7 @@ module NativeQuery
         
         protected
         def _fix_where
-            NativeQuery::Query::fix_where(@where) do |i|
+            NativeQuery::Query::fix_conditions(@where) do |i|
                 __fix_field(i)
             end
           end

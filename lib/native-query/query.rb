@@ -2,6 +2,9 @@
 
 require "native-query/result"
 require "native-query/join"
+require "hash-utils/object"
+require "hash-utils/array"
+require "hash-utils/hash"
 
 module NativeQuery
     
@@ -30,11 +33,17 @@ module NativeQuery
         @fields
         
         ##
-        # Holds list of conditions.
+        # Holds list of where conditions.
         #
         
         @where
         
+        ##
+        # Holds list of having conditions.
+        #
+        
+        @having
+                
         ##
         # Holds order specification.
         #
@@ -60,6 +69,12 @@ module NativeQuery
         @offset
         
         ##
+        # Holds group by settings.
+        #
+        
+        @group
+        
+        ##
         # Constructor.
         #
         
@@ -68,8 +83,10 @@ module NativeQuery
             @table = table
             @fields = [ ]
             @where = [ ]
+            @having = [ ]
             @joins = [ ]
             @order = [ ]
+            @group = [ ]
         end
         
         ##
@@ -105,14 +122,23 @@ module NativeQuery
         end
         
         ##
-        # Selects conditions to load.
+        # Selects where conditions to load.
         #
         
         def where(*args)
             @where << args
             return self
         end
+
+        ##
+        # Selects having conditions to load.
+        #
         
+        def having(*args)
+            @having << args
+            return self
+        end
+                
         ##
         # Selects fields for ordering according them.
         # Default order is :asc.
@@ -142,6 +168,15 @@ module NativeQuery
             @offset = offset
             return self
         end 
+        
+        ##
+        # Sets group by to load.
+        #
+        
+        def group(*fields)
+            @group += fields
+            return self
+        end
               
         ##
         # Returns result object.
@@ -150,7 +185,7 @@ module NativeQuery
         def get
             
             # Builds query
-            
+            havings = [ ]
                 # Process joins
                 join_fields, wheres, append_joins = self._process_joins
                 
@@ -158,9 +193,10 @@ module NativeQuery
                 if @joins.empty?
                     fields = @fields
                     hashes = [ ]
+                    group = @group
                 else
                     fields = @fields.map { |i| __fix_field(i) } 
-                    hashes = fields.reject { |i| not i.kind_of? Hash }
+                    hashes = fields.reject { |i| not i.hash? }
                     fields -= hashes
                 end
                 
@@ -190,8 +226,13 @@ module NativeQuery
                 # Where conditions
                 wheres += self._fix_where
                 wheres.each { |i| query.where(*i) }
+                
+                # Where conditions
+                havings += self._fix_having
+                havings.each { |i| query.having(*i) }
                   
-                # Ordering settings
+                # Grouping, ordering and having settings
+                self._process_grouping(query)
                 self._process_ordering(query)
                 
                 # Limit and offset
@@ -274,12 +315,29 @@ module NativeQuery
                         when :desc
                             query.desc
                         else
-                            if i.kind_of? Array
-                                query.orderBy("[" << i.first.to_s << "." << i.last.to_s << "]")
+                            if i.array?
+                                query.orderBy("[" << i.first.to_s << "." << i.second.to_s << "]")
                             else
                                 query.orderBy(__fix_field(i, true))
                             end
                     end
+                end
+            end
+        end
+        
+        
+        ##
+        # Process ordering settngs.
+        #
+        
+        protected
+        def _process_grouping(query)
+            # Grouping settings
+            @group.each do |i|
+                if i.array?
+                    query.groupBy("[" << i.first.to_s << "." << i.second.to_s << "]")
+                else
+                    query.groupBy(__fix_field(i, true))
                 end
             end
         end
@@ -306,18 +364,14 @@ module NativeQuery
         #
         
         def self.fix_field(name, table, formatted = false)
-            if name.kind_of? Hash
-                result = { }
-                
-                name.each_pair do |k, v|
-                    result[self.fix_field(k, table, formatted)] = v
-                end
+            if name.hash?
+                result = name.map_keys { |k| self.fix_field(k, table, formatted) }
             else
-                result = table.to_s << "." << name.to_s 
+                result = table.to_s + "." + name.to_s
+            end
             
-                if formatted
-                    result.replace("[" << result << "]")
-                end
+            if formatted
+                result = "[" << result << "]"
             end
             
             return result
@@ -329,7 +383,20 @@ module NativeQuery
         
         protected
         def _fix_where
-            Query::fix_where(@where) do |args|
+            Query::fix_conditions(@where) do |args|
+                args.each do |i|
+                    __fix_field(i)
+                end
+            end
+        end
+
+        ##
+        # Fixes having specification(s) if it's hash with symbol key.
+        #
+        
+        protected
+        def _fix_having
+            Query::fix_conditions(@having) do |args|
                 args.each do |i|
                     __fix_field(i)
                 end
@@ -341,16 +408,14 @@ module NativeQuery
         # Block is fixer.
         #
         
-        def self.fix_where(where, &block)
+        def self.fix_conditions(where, &block)
             where.map do |specification|
-                if specification.kind_of? Hash
-                    new = { }
-                    
-                    specification.each_pair do |k, v|
-                        if k.kind_of? Symbol
-                            new[block.call(k)] = v
+                if specification.hash?
+                    new = specification.map_keys do |k|
+                        if k.symbol?
+                            block.call(k)
                         else
-                            new[k] = v
+                            k
                         end
                     end
                 else
@@ -361,5 +426,5 @@ module NativeQuery
             end
         end
         
-        end
+      end
 end
