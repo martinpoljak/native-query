@@ -2,6 +2,7 @@
 require "native-query/query"
 require "hash-utils/object"   # >= 0.17.0
 require "hash-utils/array"
+require "hash-utils/string"   # >= 0.18.0
 
 module NativeQuery
 
@@ -119,7 +120,12 @@ module NativeQuery
         
         def indirect(*args)
             @type = :indirect
-            @indirect = args
+            if args.first.array? and (args.first.first == :backward) and (args.first.second.array?)
+                @indirect = args.first
+            else
+                @indirect = args
+            end
+            
             return self
         end
         
@@ -129,20 +135,23 @@ module NativeQuery
         
         def direct(*args)
             @type = :direct
-            @direct = args
+            if args.first.array? and (args.first.first == :backward) and (args.first.second.array?)
+                @direct = args.first
+            else
+                @direct = args
+            end
+            
             return self
         end
         
         ##
-        # Indicates "backwards" joining, so in opposite direction
-        # than tables are designed and is usual from point of view 
-        # of the library.
+        # Indicates backward joining.
         #
         
-        def backwards
-            self.direct((@table.to_s << "_id").to_sym => :id)
+        def backward(*args)
+            [:backward, args]
         end
-
+           
         ##
         # Builds ON join string.
         #
@@ -219,13 +228,25 @@ module NativeQuery
         
         private
         def __indirect
+
+            if (@indirect.first == :backward) and (@indirect.second.array?)
+                backward = true
+                indirect = @indirect.second
+            else
+                backward = false
+                indirect = @indirect
+            end
+            
+            ##
+            
             result = { }
             to = @table.to_s
             from = @original.to_s
-            arg1, arg2, arg3 = @indirect
+            arg1, arg2, arg3 = indirect
 
             # automatic joining
-            if @indirect.empty?
+            if indirect.empty?
+                from.swap_with(to) if backward
                 through = from + "_" + to
                 joining_table = through.to_sym
                 result[joining_table] = "[" << from << ".id] = [" << through << "." << from << "_id]"
@@ -259,13 +280,26 @@ module NativeQuery
         
         private
         def __direct
-            direct = @direct.first
+            
+            if (@direct.first == :backward) and (@direct.second.array?)
+                backward = true
+                direct = @direct.second
+            else
+                backward = false
+                direct = @direct
+            end
+            
+            ##
+            
+            empty = direct.empty?
+            direct = direct.first
             from = @original.to_s
             to = @table.to_s
             result = { }
             
             # automatic joining
-            if @direct.empty?
+            if empty
+                from.swap_with(to) if backward
                 result[@table] = "[" << from << ".id] = [" << to << "." << from << "_id]"
             # manual joining
             elsif direct.hash?

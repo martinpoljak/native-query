@@ -177,7 +177,7 @@ module NativeQuery
             @group = fields
             return self
         end
-              
+
         ##
         # Returns result object.
         #
