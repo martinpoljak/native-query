@@ -1,7 +1,7 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
-   gem "fluent-query", ">= 0.9.0"
+   gem "fluent-query", ">= 0.9.1"
    gem "hash-utils", ">= 0.18.0"
    gem "lookup-hash", ">= 0.2.0"
 
