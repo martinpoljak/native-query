@@ -1,7 +1,8 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
-   gem "fluent-query", ">= 0.1.0"
+   gem "fluent-query", ">= 0.9.0"
+   gem "hash-utils", ">= 0.18.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
