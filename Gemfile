@@ -3,6 +3,7 @@ source "http://rubygems.org"
 # Example:
    gem "fluent-query", ">= 0.9.0"
    gem "hash-utils", ">= 0.18.0"
+   gem "lookup-hash", ">= 0.2.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
