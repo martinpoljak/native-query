@@ -1,6 +1,8 @@
 # encoding: utf-8
 require "fluent-query/connection"
 require "native-query/query"
+require "hash-utils/object"
+require "lookup-hash"
 
 module NativeQuery
 
@@ -9,6 +11,15 @@ module NativeQuery
     #
      
     class Model
+    
+        ##
+        # Indicates relevant methods for binding to the 
+        # connection object.
+        #
+        
+        RELEVANT_METHODS = LookupHash[
+            :insert, :update, :delete, :begin, :commit, :rollback, :transaction
+        ]
     
         ##
         # Brings database connection object.
@@ -57,19 +68,28 @@ module NativeQuery
         #
         
         def method_missing(sym, *args, &block)
-            query = Query::new(self.connection, sym)
             
-            if args and not args.empty?
-                query.fields(*args)
-            end
-            
-            if block
-                result = query.instance_eval(&block)
+            # If it's binding to the connection
+            if sym.in? Model::RELEVANT_METHODS
+                return self.connection.send(sym, *args, &block)
+                
+            # In otherwise, it's query request
             else
-                result = query
-            end
+                query = Query::new(self.connection, sym)
+                
+                if args and not args.empty?
+                    query.fields(*args)
+                end
+                
+                if not block.nil?
+                    result = query.instance_eval(&block)
+                else
+                    result = query
+                end
 
-            return result
+                return result
+            end
+            
         end
         
     end
