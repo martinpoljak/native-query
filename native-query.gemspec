@@ -4,13 +4,13 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{native-query}
-  s.version = "0.9.1"
+  s.name = "native-query"
+  s.version = "0.9.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = [%q{Martin Kozák}]
-  s.date = %q{2011-07-14}
-  s.email = %q{martinkozak@martinkozak.net}
+  s.authors = ["Martin Koz\u{e1}k"]
+  s.date = "2011-08-31"
+  s.email = "martinkozak@martinkozak.net"
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.md"
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
+    "lib/native-query.rb",
     "lib/native-query/join.rb",
     "lib/native-query/model.rb",
     "lib/native-query/query.rb",
@@ -30,11 +31,11 @@ Gem::Specification.new do |s|
     "lib/native-query/row.rb",
     "native-query.gemspec"
   ]
-  s.homepage = %q{http://github.com/martinkozak/native-query}
-  s.licenses = [%q{MIT}]
-  s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.5}
-  s.summary = %q{Cool way how to speak with database server. It's ellegant and very ruby SQL query helper which works by similar way as Arel or another ORM selecting logic. It's derived from Dibi database layer in its ideas, so is much more simple and (of sure) much more KISS, readable and straightforward.}
+  s.homepage = "http://github.com/martinkozak/native-query"
+  s.licenses = ["MIT"]
+  s.require_paths = ["lib"]
+  s.rubygems_version = "1.8.10"
+  s.summary = "Cool way how to speak with database server. It's ellegant and very ruby SQL query helper which works by similar way as Arel or another ORM selecting logic. It's derived from Dibi database layer in its ideas, so is much more simple and (of sure) much more KISS, readable and straightforward."
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
