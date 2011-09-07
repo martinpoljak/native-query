@@ -2,7 +2,7 @@
 require "fluent-query/connection"
 require "native-query/query"
 require "hash-utils/object"
-require "lookup-hash"
+require "set"
 
 module NativeQuery
 
@@ -17,7 +17,7 @@ module NativeQuery
         # connection object.
         #
         
-        RELEVANT_METHODS = LookupHash[
+        RELEVANT_METHODS = Set::new [
             :insert, :update, :delete, :begin, :commit, :rollback, :transaction
         ]
     
