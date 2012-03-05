@@ -453,7 +453,7 @@ Contributing
 Copyright
 ---------
 
-Copyright &copy; 2010-2011 [Martin Kozák][4]. See `LICENSE.txt` for
+Copyright &copy; 2010-2012 [Martin Kozák][4]. See `LICENSE.txt` for
 further details.
 
 [1]: http://dibiphp.com/
