@@ -149,7 +149,7 @@ module NativeQuery
         #
         
         def backward(*args)
-            [:backward, args]
+            @direct = [:backward, args]
         end
            
         ##
@@ -215,10 +215,12 @@ module NativeQuery
         
         protected
         def _fix_where
-            NativeQuery::Query::fix_conditions(@where) do |args|
-                args.each do |i|
-                    __fix_field(i)
-                end
+            NativeQuery::Query::fix_conditions(@where) do |arg|
+                #p args
+                #args.each do |i|
+                #    __fix_field(i)
+                #end
+                __fix_field(arg)
             end
         end
         

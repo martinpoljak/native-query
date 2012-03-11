@@ -383,10 +383,8 @@ module NativeQuery
         
         protected
         def _fix_where
-            Query::fix_conditions(@where) do |args|
-                args.each do |i|
-                    __fix_field(i)
-                end
+            Query::fix_conditions(@where) do |arg|
+                __fix_field(arg)
             end
         end
 
@@ -396,10 +394,10 @@ module NativeQuery
         
         protected
         def _fix_having
-            Query::fix_conditions(@having) do |args|
-                args.each do |i|
-                    __fix_field(i)
-                end
+            Query::fix_conditions(@having) do |arg|
+                #args.each do |i|
+                    __fix_field(arg)
+                #end
             end
         end
         
@@ -410,19 +408,34 @@ module NativeQuery
         
         def self.fix_conditions(where, &block)
             where.map do |specification|
-                if specification.hash?
-                    new = specification.map_keys do |k|
-                        if k.symbol?
-                            block.call(k)
-                        else
-                            k
-                        end
+              
+                if specification.array?
+                    _new = specification.map do |item|
+                        item.map_keys do |k|
+                            if k.symbol?
+                                block.call(k)
+                            else
+                                k
+                            end
+                        end 
                     end
                 else
-                    new = specification
+                    _new = specification
                 end
+              
+                #if specification.hash?
+                #    _new = specification.map_keys do |k|
+                #        if k.symbol?
+                #            block.call(k)
+                #        else
+                #            k
+                #        end
+                #    end
+                #else
+                #    _new = specification
+                #end
                 
-                new  # returns
+                _new  # returns
             end
         end
         
