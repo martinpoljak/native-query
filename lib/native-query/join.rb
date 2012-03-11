@@ -281,12 +281,12 @@ module NativeQuery
         private
         def __direct
             
-            if (@direct.first == :backward) and (@direct.second.array?)
+            if @direct.array? and (@direct.first == :backward) and (@direct.second.array?)
                 backward = true
                 direct = @direct.second
             else
                 backward = false
-                direct = @direct
+                direct = [ ]
             end
             
             ##
