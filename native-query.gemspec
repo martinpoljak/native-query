@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "native-query"
-  s.version = "0.9.4"
+  s.version = "0.9.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Martin Koz\u{e1}k"]
-  s.date = "2012-03-11"
+  s.date = "2012-05-29"
   s.email = "martinkozak@martinkozak.net"
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/martinkozak/native-query"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.17"
+  s.rubygems_version = "1.8.24"
   s.summary = "Cool way how to speak with database server. It's ellegant DSL; the SQL query helper which works by similar way as Arel or another ORM selecting logic. But it's derived from Dibi database layer in its ideas, so it's much more simple and (of sure) much more KISS, readable and straightforward."
 
   if s.respond_to? :specification_version then
