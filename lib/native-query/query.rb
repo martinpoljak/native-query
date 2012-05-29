@@ -411,13 +411,17 @@ module NativeQuery
               
                 if specification.array?
                     _new = specification.map do |item|
-                        item.map_keys do |k|
-                            if k.symbol?
-                                block.call(k)
-                            else
-                                k
-                            end
-                        end 
+                        if item.hash?
+                            item.map_keys do |k|
+                                if k.symbol?
+                                    block.call(k)
+                                else
+                                    k
+                                end
+                            end 
+                        else
+                            item
+                        end
                     end
                 else
                     _new = specification

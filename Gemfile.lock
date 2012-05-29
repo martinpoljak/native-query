@@ -7,7 +7,7 @@ GEM
       hash-utils (>= 0.18.0)
       hashie (>= 1.0.0)
     git (1.2.5)
-    hash-utils (1.0.0)
+    hash-utils (2.0.0)
       ruby-version
     hashie (1.2.0)
     jeweler2 (2.0.9)
