@@ -32,7 +32,7 @@ module NativeQuery
         # Maps unknown calls to data fields. 
         #
         
-        def method_missing(sym, *args, &block)
+        def method_missing(sym, *args)
             __data[sym]
         end
         
@@ -45,11 +45,21 @@ module NativeQuery
         end
         
         ##
+        # Converts to hash.
+        #
+        
+        def to_hash
+            __data.to_hash
+        end
+        
+        ##
         # Returns data field.
         #
         
         private
         def __data
+            @data
+=begin
             if @__data.nil?
            
                 # Calls for data and converts string keys of hash 
@@ -60,6 +70,7 @@ module NativeQuery
                 
                 if not data.nil?
                     @data = nil
+                    
                     data.each_pair do |k, v|
                         @__data[k.to_sym] = v
                     end
@@ -70,6 +81,7 @@ module NativeQuery
             end
 
             return @__data
+=end
         end
     end
 end
